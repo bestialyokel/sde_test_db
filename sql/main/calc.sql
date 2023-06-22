@@ -1,7 +1,7 @@
 
-drop table if exists result;
+drop table if exists results;
 
-create table result (
+create table results (
     id int,
     response text
 );
@@ -13,7 +13,7 @@ with book_person_count_cte as (
         where t.book_ref = b.book_ref 
         group by b.book_ref
 )
-insert into result(id, response)
+insert into results(id, response)
 select 1, max(person_count) from book_person_count_cte;
 -- 1
 
@@ -24,7 +24,7 @@ with book_person_count_cte as (
         where t.book_ref = b.book_ref 
         group by b.book_ref
 )
-insert into result(id, response)
+insert into results(id, response)
 select 2, count(*) from book_person_count_cte where person_count > (select avg(person_count) from book_person_count_cte);
 -- 2
 
@@ -41,7 +41,7 @@ with book_person_count_cte as (
 max_passenger_bookings_tickets as (
     select t.* from tickets t, max_passenger_bookings b where b.book_ref = t.book_ref
 )
-insert into result(id, response)
+insert into results(id, response)
 select 3, count(*) from max_passenger_bookings b1, max_passenger_bookings b2
 where b1.book_ref != b2.book_ref
 and NOT EXISTS (
@@ -70,7 +70,7 @@ with book_person_count_cte as (
         where t.book_ref = b.book_ref 
         group by b.book_ref
 )
-insert into result(id, response)
+insert into results(id, response)
 select 4, 
 t.book_ref || '|' || t.passenger_id || '|' || t.passenger_name || '|' || t.contact_data
 from tickets t, book_person_count_cte b
@@ -79,7 +79,7 @@ order by t.book_ref, t.passenger_id, t.passenger_name, t.contact_data;
 -- 4
 
 -- 5
-insert into result(id, response)
+insert into results(id, response)
 select 5, max(flights_count) from (
     select b.book_ref, count(*) as flights_count from
         bookings b,
@@ -94,7 +94,7 @@ select 5, max(flights_count) from (
 -- 5
 
 -- 6
-insert into result(id, response)
+insert into results(id, response)
 select 6, max(flights_count) from (
     select b.book_ref, count(*) as flights_count from
         bookings b,
@@ -109,7 +109,7 @@ select 6, max(flights_count) from (
 -- 6
 
 -- 7
-insert into result(id, response)
+insert into results(id, response)
 select 7, max(flights_count) from (
     select count(*) as flights_count from
         tickets t,
@@ -135,7 +135,7 @@ passengers as (
         contact_data
     from tickets
 )
-insert into result(id, response)
+insert into results(id, response)
 select 8, 
 p.passenger_id || '|' || p.passenger_name || '|' || p.contact_data || '|' total_spent
 from passengers p, passenger_total_spent pts 
@@ -173,7 +173,7 @@ passenger_flights_duration as (
     and fd.flight_id = f.flight_id
     group by t.passenger_id
 )
-insert into result(id, response)
+insert into results(id, response)
 select 9,
 p.passenger_id || '|' || p.passenger_name || '|' || p.contact_data || '|' || pfd.flights_duration_sum
 from passenger_flights_duration pfd, passengers p
@@ -184,7 +184,7 @@ order by p.passenger_id, p.passenger_name, p.contact_data, pfd.flights_duration_
 
 
 -- 10
-insert into result(id, response)
+insert into results(id, response)
 select 10, city
 from airports a1
 group by city
@@ -213,7 +213,7 @@ citites_directions_count as (
     select lft_city, count(*) as cnt from cities_directions fd 
     group by lft_city
 )
-insert into result(id, response)
+insert into results(id, response)
 select 11, lft_city from citites_directions_count cdc
 where cnt = (select min(cnt) from citites_directions_count)
 order by lft_city;
@@ -240,7 +240,7 @@ cities_directions as (
     and a1.airport_code = departure_airport and a2.airport_code = arrival_airport
     group by a1.city, a2.city
 )
-insert into result(id, response)
+insert into results(id, response)
 select 12, lft || '|' || rgt from (
     select distinct
     least    (lft_city, rgt_city) as lft,
@@ -282,7 +282,7 @@ cities_directions as (
     where a1.airport_code = departure_airport and a2.airport_code = arrival_airport
     group by a1.city, a2.city
 )
-insert into result(id, response)
+insert into results(id, response)
 select 13, city from (
     select c2.city from cities c1, cities c2
     where c1.city = 'Москва'
@@ -299,7 +299,7 @@ with aircraft_flights_completed_cnt as (
     and f.status = 'Arrived'
     group by a.aircraft_code
 )
-insert into result(id, response)
+insert into results(id, response)
 select 14, a.model from aircrafts a, aircraft_flights_completed_cnt afc
 where a.aircraft_code = afc.aircraft_code
 and afc.flights_cnt = (select max(flights_cnt) from aircraft_flights_completed_cnt);
@@ -320,7 +320,7 @@ with test as (
     and f.status = 'Arrived'
     group by a.model
 )
-insert into result(id, response)
+insert into results(id, response)
 select 15, model from test
 where passenger_cnt = (select max(passenger_cnt) from test);
 -- 15
@@ -337,7 +337,7 @@ with flights_duration as (
     end as flight_duration
     from flights f
 )
-insert into result(id, response)
+insert into results(id, response)
 select 16, (sum(extract(epoch from (f.scheduled_arrival - f.scheduled_departure))) - sum(fd.flight_duration))/60 as diff
 from flights f, flights_duration fd
 where f.flight_id = fd.flight_id 
@@ -345,7 +345,7 @@ and f.status in ('Departed', 'Arrived');
 -- 16
 
 -- 17
-insert into result(id, response)
+insert into results(id, response)
 select 17, to_city from (
     select a1.city as from_city, a2.city as to_city,
     actual_departure,
@@ -370,7 +370,7 @@ with flights_total_price as (
     and bp.flight_id = tf.flight_id
     group by f.flight_id
 )
-insert into result(id, response)
+insert into results(id, response)
 select 18, flight_id from flights_total_price
 where sum = (select max(sum) from flights_total_price)
 order by flight_id;
@@ -382,14 +382,14 @@ with flights_dow_cnt as (
     where status = 'Arrived'
     group by extract(dow from (f.actual_arrival))
 )
-insert into result(id, response)
+insert into results(id, response)
 select 19, dow from flights_dow_cnt 
 where cnt = (select min(cnt) from flights_dow_cnt)
 order by dow;
 -- 19
 
 -- 20
-insert into result(id, response)
+insert into results(id, response)
 select 20, COALESCE(avg(flights_cnt), 0) from (
     select
     extract(day from f.actual_departure) as day,
@@ -416,7 +416,7 @@ with flights_duration as (
     end as flight_duration
     from flights f
 )
-insert into result(id, response)
+insert into results(id, response)
 select 21, city from (
     select 
     a.city,
