@@ -8,18 +8,18 @@ create table results (
 
 -- 1
 with book_person_count_cte as (
-    select b.book_ref, count(*) as person_count 
+    select b.book_ref, count(distinct t.passenger_id) as person_count 
         from tickets t, bookings b 
         where t.book_ref = b.book_ref 
         group by b.book_ref
 )
-insert into results(id, response)
+insert into results(id, response
 select 1, max(person_count) from book_person_count_cte;
 -- 1
 
 -- 2
 with book_person_count_cte as (
-    select b.book_ref, count(*) as person_count 
+    select b.book_ref, count(distinct t.passenger_id) as person_count 
         from tickets t, bookings b 
         where t.book_ref = b.book_ref 
         group by b.book_ref
@@ -30,7 +30,7 @@ select 2, count(*) from book_person_count_cte where person_count > (select avg(p
 
 -- 3
 with book_person_count_cte as (
-    select b.book_ref, count(*) as person_count 
+    select b.book_ref, count(distinct t.passenger_id) as person_count 
         from tickets t, bookings b 
         where t.book_ref = b.book_ref 
         group by b.book_ref
@@ -65,7 +65,7 @@ and NOT EXISTS (
 
 -- 4
 with book_person_count_cte as (
-    select b.book_ref, count(*) as person_count 
+    select b.book_ref, count(distinct t.passenger_id) as person_count 
         from tickets t, bookings b 
         where t.book_ref = b.book_ref 
         group by b.book_ref
