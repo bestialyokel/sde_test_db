@@ -292,9 +292,8 @@ order by arrival_city;
 
 -- 18
 with flights_total_price as (
-    select f.flight_id, sum(tf.amount) as sum from flights f, ticket_flights tf, boarding_passes bp
+    select f.flight_id, sum(tf.amount) as sum from flights f, ticket_flights tf
     where f.flight_id = tf.flight_id
-    and bp.flight_id = tf.flight_id
     group by f.flight_id
 )
 insert into results(id, response)
