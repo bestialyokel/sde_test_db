@@ -285,7 +285,7 @@ select 17, arrival_city from (
     from flights_v f
 ) x
 where departure_city = 'Санкт-Петербург'
-and '2016-09-13' between actual_departure and actual_departure + actual_duration 
+and date('2016-09-13') between date(actual_departure) and date(actual_departure + actual_duration)
 group by departure_city, arrival_city
 order by arrival_city;
 -- 17
