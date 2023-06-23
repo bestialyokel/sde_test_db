@@ -71,11 +71,15 @@ with book_person_count_cte as (
         group by b.book_ref
 )
 insert into results(id, response)
-select 4, 
-t.book_ref || '|' || t.passenger_id || '|' || t.passenger_name || '|' || t.contact_data
-from tickets t, book_person_count_cte b
-where t.book_ref = b.book_ref and b.person_count = 3
-order by t.book_ref, t.passenger_id, t.passenger_name, t.contact_data;
+select 4, book_ref || '|' || string_agg(user_data, '|') from (
+    select
+    t.book_ref,
+    t.passenger_id || '|' || t.passenger_name || '|' || t.contact_data as user_data
+    from tickets t, book_person_count_cte b
+    where t.book_ref = b.book_ref and b.person_count = 3
+    order by t.book_ref, t.passenger_id, t.passenger_name, t.contact_data
+) x
+group by book_ref;
 -- 4
 
 -- 5
@@ -84,11 +88,9 @@ select 5, max(flights_count) from (
     select b.book_ref, count(*) as flights_count from
         bookings b,
         tickets t,
-        ticket_flights tf,
-        flights f
+        ticket_flights tf
     where b.book_ref = t.book_ref 
         and t.ticket_no = tf.ticket_no
-        and tf.flight_id = f.flight_id
     group by b.book_ref
 ) x;
 -- 5
@@ -99,11 +101,9 @@ select 6, max(flights_count) from (
     select b.book_ref, count(*) as flights_count from
         bookings b,
         tickets t,
-        ticket_flights tf,
-        flights f
+        ticket_flights tf
     where b.book_ref = t.book_ref 
         and t.ticket_no = tf.ticket_no
-        and tf.flight_id = f.flight_id
     group by b.book_ref, t.passenger_id
 ) x;
 -- 6
@@ -113,10 +113,8 @@ insert into results(id, response)
 select 7, max(flights_count) from (
     select count(*) as flights_count from
         tickets t,
-        ticket_flights tf,
-        flights f
+        ticket_flights tf
     where t.ticket_no = tf.ticket_no
-        and tf.flight_id = f.flight_id
     group by t.passenger_id
 ) x;
 -- 7
@@ -182,7 +180,10 @@ order by city;
 
 -- 11
 with citites_directions_count as (
-    select arrival_city, count(*) as cnt from routes r 
+    select arrival_city, count(*) as cnt from (
+        select departure_city, arrival_city from routes r 
+        group by departure_city, arrival_city
+    ) x
     group by arrival_city
 )
 insert into results(id, response)
@@ -207,7 +208,6 @@ select 12,
         c1.city as lft_city,
         c2.city as rgt_city 
         from cities c1, cities c2 
-        where c1.city != c2.city
         except
         (
         select arrival_city, departure_city from routes group by arrival_city, departure_city
