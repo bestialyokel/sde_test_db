@@ -13,7 +13,7 @@ with book_person_count_cte as (
         where t.book_ref = b.book_ref 
         group by b.book_ref
 )
-insert into results(id, response
+insert into results(id, response)
 select 1, max(person_count) from book_person_count_cte;
 -- 1
 
